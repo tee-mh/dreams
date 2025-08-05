@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T Dreams</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+        <h1>Dreams Record</h1>
+        <div id="calendar-container">
+            <button id="showCalendarBtn" type="button">📅 Select Date</button>
+            <span id="selectedDateDisplay">Today</span>
+            <button id="showAllBtn" type="button">Show All Dreams</button>
+        </div>
+        <form id="entryForm">
+            <textarea id="note" placeholder="Write your dream here..." required></textarea>
+            <button type="submit">Save Entry</button>
+        </form>
+        <div id="entries"></div>
+        <div id="calendarModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span id="closeCalendarModal" class="close">&times;</span>
+                <h2>Select Date</h2>
+                <div id="calendar">
+                    <div id="calendar-header">
+                        <button id="prevMonth" type="button">‹</button>
+                        <span id="monthYear"></span>
+                        <button id="nextMonth" type="button">›</button>
+                    </div>
+                    <div id="calendar-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div id="allDreamsModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <h2>All Dreams</h2>
+                <div id="allDreamsList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

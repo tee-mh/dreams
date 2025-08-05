@@ -1,0 +1,354 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark {
+    background: #2a1b3d;
+    color: #f0f4f8;
+}
+
+.container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.dark .container {
+    background: #4a2c5a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+h1 {
+    text-align: center;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.dark h1 {
+    color: #ffd700;
+}
+
+#calendar-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    justify-content: center;
+}
+
+#selectedDateDisplay {
+    font-weight: bold;
+    color: #333;
+    padding: 8px 12px;
+    background: #f0f4f8;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark #selectedDateDisplay {
+    color: #ffd700;
+    background: #5a3a6a;
+    border-color: #8b5a9c;
+}
+
+#calendar {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.dark #calendar {
+    background: #5a3a6a;
+    border-color: #8b5a9c;
+}
+
+#calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+    color: #333;
+}
+
+.dark #calendar-header {
+    color: #ffd700;
+}
+
+#calendar-header button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #333;
+    transition: background 0.2s ease, color 0.3s ease;
+}
+
+#calendar-header button:hover {
+    background: #f0f0f0;
+}
+
+.dark #calendar-header button {
+    color: #ffd700;
+}
+
+.dark #calendar-header button:hover {
+    background: #6a4c93;
+}
+
+#calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    min-width: 240px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease, color 0.3s ease;
+    position: relative;
+    min-height: 28px;
+}
+
+.calendar-day:hover {
+    background: #e3f2fd;
+}
+
+.dark .calendar-day:hover {
+    background: #6a4c93;
+}
+
+.calendar-day.other-month {
+    color: #ccc;
+}
+
+.dark .calendar-day.other-month {
+    color: #666;
+}
+
+.calendar-day.selected {
+    background: #28a745;
+    color: white;
+}
+
+.calendar-day.today {
+    background: #ffd700;
+    color: #333;
+    font-weight: bold;
+}
+
+.calendar-day.has-entry::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 4px;
+    height: 4px;
+    background: #28a745;
+    border-radius: 50%;
+}
+
+.dark .calendar-day.has-entry::after {
+    background: #34ce57;
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: #666;
+    padding: 4px 0;
+}
+
+.dark .calendar-weekday {
+    color: #ffd700;
+}
+
+#showAllBtn {
+    align-self: center;
+}
+
+#entryForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#note {
+    min-height: 80px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.dark #note {
+    background: #6a4c93;
+    border-color: #8b5a9c;
+    color: #f0f4f8;
+}
+
+.dark #note::placeholder {
+    color: #d0d0d0;
+}
+
+button {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background: #218838;
+}
+
+.dark button {
+    background: #34ce57;
+}
+
+.dark button:hover {
+    background: #28a745;
+}
+
+#calendar input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.dark #calendar input {
+    background: #6a4c93;
+    border-color: #8b5a9c;
+    color: #f0f4f8;
+}
+
+.dark #calendar input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+#entries {
+    margin-top: 24px;
+}
+.entry {
+    background: #f9f9f9;
+    border-left: 4px solid #007bff;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 4px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .entry {
+    background: #5a3a6a;
+    border-left-color: #ffd700;
+}
+
+.entry-date {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+    transition: color 0.3s ease;
+}
+
+.dark .entry-date {
+    color: #ffd700;
+}
+
+/* Modal styles for All Dreams */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fff;
+    margin: 60px auto;
+    padding: 24px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+}
+
+#calendarModal .modal-content {
+    max-width: 320px;
+    padding: 16px;
+}
+
+.dark .modal-content {
+    background-color: #4a2c5a;
+    border-color: #6a4c93;
+}
+
+.dark .modal-content h2 {
+    color: #ffd700;
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close:hover,
+.close:focus {
+    color: #ffd700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dark .close {
+    color: #ffd700;
+}
