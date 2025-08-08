@@ -16,15 +16,18 @@ let selectedDate = getToday();
 
 function getToday() {
     const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 10);
 }
 
 function formatDate(date) {
-    return date.toISOString().slice(0, 10);
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
 }
 
 function formatDisplayDate(dateStr) {
-    const date = new Date(dateStr + 'T00:00:00');
+    const date = new Date(dateStr + 'T12:00:00');
     const today = getToday();
     if (dateStr === today) {
         return 'Today';
@@ -42,8 +45,41 @@ function updateSelectedDateDisplay() {
 
 function saveEntry(date, note) {
     const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
-    entries[date] = note;
+    if (!entries[date]) {
+        entries[date] = [];
+    }
+    const timestamp = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    entries[date].push({
+        id: Date.now(),
+        text: note,
+        timestamp: timestamp
+    });
     localStorage.setItem('dreamEntries', JSON.stringify(entries));
+}
+
+function updateEntry(date, entryId, newText) {
+    const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
+    if (entries[date]) {
+        const entryIndex = entries[date].findIndex(entry => entry.id === entryId);
+        if (entryIndex !== -1) {
+            entries[date][entryIndex].text = newText;
+            localStorage.setItem('dreamEntries', JSON.stringify(entries));
+        }
+    }
+}
+
+function deleteEntry(date, entryId) {
+    const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
+    if (entries[date]) {
+        entries[date] = entries[date].filter(entry => entry.id !== entryId);
+        if (entries[date].length === 0) {
+            delete entries[date];
+        }
+        localStorage.setItem('dreamEntries', JSON.stringify(entries));
+    }
 }
 
 function getEntries() {
@@ -53,13 +89,90 @@ function getEntries() {
 function showEntries(date) {
     const entries = getEntries();
     entriesDiv.innerHTML = '';
-    if (entries[date]) {
-        const entry = document.createElement('div');
-        entry.className = 'entry';
-        entry.innerHTML = `<div class="entry-date">${formatDisplayDate(date)}</div><div>${entries[date]}</div>`;
-        entriesDiv.appendChild(entry);
+    
+    if (entries[date] && entries[date].length > 0) {
+        const dateHeader = document.createElement('h3');
+        dateHeader.textContent = formatDisplayDate(date);
+        dateHeader.style.color = '#333';
+        dateHeader.style.marginBottom = '12px';
+        entriesDiv.appendChild(dateHeader);
+        
+        // Style for dark mode
+        if (document.body.classList.contains('dark')) {
+            dateHeader.style.color = '#ffd700';
+        }
+        
+        entries[date].forEach(entry => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'entry';
+            entryDiv.innerHTML = `
+                <div class="entry-header">
+                    <span class="entry-time">${entry.timestamp}</span>
+                    <div class="entry-actions">
+                        <button class="edit-btn" onclick="editEntry('${date}', ${entry.id})">✏️</button>
+                        <button class="delete-btn" onclick="deleteEntryConfirm('${date}', ${entry.id})">🗑️</button>
+                    </div>
+                </div>
+                <div class="entry-text" id="entry-${entry.id}">${entry.text}</div>
+            `;
+            entriesDiv.appendChild(entryDiv);
+        });
     } else {
-        entriesDiv.innerHTML = '<p>No entry for this date.</p>';
+        entriesDiv.innerHTML = '<p>No entries for this date.</p>';
+    }
+}
+
+function editEntry(date, entryId) {
+    const entryElement = document.getElementById(`entry-${entryId}`);
+    const currentText = entryElement.textContent;
+    
+    const textarea = document.createElement('textarea');
+    textarea.value = currentText;
+    textarea.className = 'edit-textarea';
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '60px';
+    textarea.style.padding = '8px';
+    textarea.style.borderRadius = '4px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.resize = 'vertical';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.className = 'save-edit-btn';
+    saveBtn.style.marginTop = '8px';
+    saveBtn.style.marginRight = '8px';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'cancel-edit-btn';
+    cancelBtn.style.marginTop = '8px';
+    
+    entryElement.innerHTML = '';
+    entryElement.appendChild(textarea);
+    entryElement.appendChild(saveBtn);
+    entryElement.appendChild(cancelBtn);
+    
+    saveBtn.onclick = () => {
+        const newText = textarea.value.trim();
+        if (newText) {
+            updateEntry(date, entryId, newText);
+            showEntries(date);
+            renderCalendar();
+        }
+    };
+    
+    cancelBtn.onclick = () => {
+        showEntries(date);
+    };
+    
+    textarea.focus();
+}
+
+function deleteEntryConfirm(date, entryId) {
+    if (confirm('Are you sure you want to delete this entry?')) {
+        deleteEntry(date, entryId);
+        showEntries(date);
+        renderCalendar();
     }
 }
 
@@ -114,7 +227,7 @@ function renderCalendar() {
         if (dateStr === selectedDate) {
             dayElement.classList.add('selected');
         }
-        if (entries[dateStr]) {
+        if (entries[dateStr] && entries[dateStr].length > 0) {
             dayElement.classList.add('has-entry');
         }
         
@@ -215,11 +328,33 @@ showAllBtn.addEventListener('click', () => {
         allDreamsList.innerHTML = '<p>No dreams recorded yet.</p>';
     } else {
         const dreamsArr = Object.entries(entries).sort((a, b) => b[0].localeCompare(a[0]));
-        dreamsArr.forEach(([date, note]) => {
-            const div = document.createElement('div');
-            div.className = 'entry';
-            div.innerHTML = `<div class="entry-date">${date}</div><div>${note}</div>`;
-            allDreamsList.appendChild(div);
+        dreamsArr.forEach(([date, dayEntries]) => {
+            const dateDiv = document.createElement('div');
+            dateDiv.innerHTML = `<h3 style="color: #333; margin: 16px 0 8px 0;">${formatDisplayDate(date)}</h3>`;
+            allDreamsList.appendChild(dateDiv);
+            
+            // Style for dark mode
+            if (document.body.classList.contains('dark')) {
+                dateDiv.querySelector('h3').style.color = '#ffd700';
+            }
+            
+            if (Array.isArray(dayEntries)) {
+                dayEntries.forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 'entry';
+                    div.innerHTML = `
+                        <div class="entry-time" style="font-size: 12px; color: #666; margin-bottom: 4px;">${entry.timestamp}</div>
+                        <div>${entry.text}</div>
+                    `;
+                    allDreamsList.appendChild(div);
+                });
+            } else {
+                // Handle old format (single string entries)
+                const div = document.createElement('div');
+                div.className = 'entry';
+                div.innerHTML = `<div>${dayEntries}</div>`;
+                allDreamsList.appendChild(div);
+            }
         });
     }
     allDreamsModal.style.display = 'block';
