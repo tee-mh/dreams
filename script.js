@@ -43,7 +43,7 @@ function updateSelectedDateDisplay() {
     selectedDateDisplay.textContent = formatDisplayDate(selectedDate);
 }
 
-function saveEntry(date, note) {
+function saveEntry(date, note, isPriority = false) {
     const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
     if (!entries[date]) {
         entries[date] = [];
@@ -52,23 +52,48 @@ function saveEntry(date, note) {
         hour: '2-digit', 
         minute: '2-digit' 
     });
+    // Preserve paragraphs by replacing newlines with <br>
+    const formattedText = note.replace(/\n/g, '<br>');
     entries[date].push({
         id: Date.now(),
-        text: note,
-        timestamp: timestamp
+        text: formattedText,
+        timestamp: timestamp,
+        priority: isPriority
     });
     localStorage.setItem('dreamEntries', JSON.stringify(entries));
 }
 
-function updateEntry(date, entryId, newText) {
+function updateEntry(date, entryId, newText, isPriority = null) {
     const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
     if (entries[date]) {
         const entryIndex = entries[date].findIndex(entry => entry.id === entryId);
         if (entryIndex !== -1) {
-            entries[date][entryIndex].text = newText;
+            // Preserve paragraphs by replacing newlines with <br>
+            const formattedText = newText.replace(/\n/g, '<br>');
+            entries[date][entryIndex].text = formattedText;
+            
+            // Update priority if specified
+            if (isPriority !== null) {
+                entries[date][entryIndex].priority = isPriority;
+            }
+            
             localStorage.setItem('dreamEntries', JSON.stringify(entries));
         }
     }
+}
+
+function togglePriority(date, entryId) {
+    const entries = JSON.parse(localStorage.getItem('dreamEntries') || '{}');
+    if (entries[date]) {
+        const entryIndex = entries[date].findIndex(entry => entry.id === entryId);
+        if (entryIndex !== -1) {
+            // Toggle priority
+            entries[date][entryIndex].priority = !entries[date][entryIndex].priority;
+            localStorage.setItem('dreamEntries', JSON.stringify(entries));
+            return entries[date][entryIndex].priority;
+        }
+    }
+    return false;
 }
 
 function deleteEntry(date, entryId) {
@@ -104,10 +129,15 @@ function showEntries(date) {
         
         entries[date].forEach(entry => {
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'entry';
+            entryDiv.className = entry.priority ? 'entry priority' : 'entry';
             entryDiv.innerHTML = `
                 <div class="entry-header">
-                    <span class="entry-time">${entry.timestamp}</span>
+                    <div class="entry-header-left">
+                        <span class="entry-time">${entry.timestamp}</span>
+                        <button class="priority-btn" onclick="togglePriorityAndUpdate('${date}', ${entry.id})">
+                            ${entry.priority ? '⭐' : '☆'}
+                        </button>
+                    </div>
                     <div class="entry-actions">
                         <button class="edit-btn" onclick="editEntry('${date}', ${entry.id})">✏️</button>
                         <button class="delete-btn" onclick="deleteEntryConfirm('${date}', ${entry.id})">🗑️</button>
@@ -123,39 +153,68 @@ function showEntries(date) {
 }
 
 function editEntry(date, entryId) {
+    const entries = getEntries();
+    const entry = entries[date].find(e => e.id === entryId);
     const entryElement = document.getElementById(`entry-${entryId}`);
-    const currentText = entryElement.textContent;
+    
+    // Get the current text and replace <br> with newlines for editing
+    let currentText = entry.text;
+    currentText = currentText.replace(/<br>/g, '\n');
     
     const textarea = document.createElement('textarea');
     textarea.value = currentText;
     textarea.className = 'edit-textarea';
     textarea.style.width = '100%';
-    textarea.style.minHeight = '60px';
+    textarea.style.minHeight = '100px';
     textarea.style.padding = '8px';
     textarea.style.borderRadius = '4px';
     textarea.style.border = '1px solid #ccc';
     textarea.style.resize = 'vertical';
     
+    // Create priority checkbox
+    const priorityCheck = document.createElement('div');
+    priorityCheck.style.marginTop = '8px';
+    priorityCheck.style.display = 'flex';
+    priorityCheck.style.alignItems = 'center';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `priority-${entryId}`;
+    checkbox.checked = entry.priority || false;
+    checkbox.style.marginRight = '8px';
+    
+    const label = document.createElement('label');
+    label.htmlFor = `priority-${entryId}`;
+    label.textContent = 'Mark as important dream';
+    
+    priorityCheck.appendChild(checkbox);
+    priorityCheck.appendChild(label);
+    
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.style.marginTop = '8px';
+    
     const saveBtn = document.createElement('button');
     saveBtn.textContent = 'Save';
     saveBtn.className = 'save-edit-btn';
-    saveBtn.style.marginTop = '8px';
     saveBtn.style.marginRight = '8px';
     
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.className = 'cancel-edit-btn';
-    cancelBtn.style.marginTop = '8px';
+    
+    buttonsDiv.appendChild(saveBtn);
+    buttonsDiv.appendChild(cancelBtn);
     
     entryElement.innerHTML = '';
     entryElement.appendChild(textarea);
-    entryElement.appendChild(saveBtn);
-    entryElement.appendChild(cancelBtn);
+    entryElement.appendChild(priorityCheck);
+    entryElement.appendChild(buttonsDiv);
     
     saveBtn.onclick = () => {
         const newText = textarea.value.trim();
+        const isPriority = checkbox.checked;
         if (newText) {
-            updateEntry(date, entryId, newText);
+            updateEntry(date, entryId, newText, isPriority);
             showEntries(date);
             renderCalendar();
         }
@@ -166,6 +225,12 @@ function editEntry(date, entryId) {
     };
     
     textarea.focus();
+}
+
+function togglePriorityAndUpdate(date, entryId) {
+    const isPriority = togglePriority(date, entryId);
+    showEntries(date);
+    return false; // Prevent default
 }
 
 function deleteEntryConfirm(date, entryId) {
@@ -281,17 +346,59 @@ nextMonth.addEventListener('click', () => {
 entryForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const note = noteInput.value.trim();
+    const isPriority = document.getElementById('priorityCheckbox').checked;
     if (note) {
-        saveEntry(selectedDate, note);
+        saveEntry(selectedDate, note, isPriority);
         noteInput.value = '';
+        document.getElementById('priorityCheckbox').checked = false;
         showEntries(selectedDate);
         alert('Entry saved!');
     }
 });
 
-// Initial render
-updateSelectedDateDisplay();
-showEntries(selectedDate);
+// Check for browser support
+function checkBrowserSupport() {
+    // Check if localStorage is available
+    let storageAvailable = false;
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        storageAvailable = true;
+    } catch (e) {
+        console.error('localStorage not available');
+    }
+    
+    // Check if service workers are supported
+    const serviceWorkerSupported = 'serviceWorker' in navigator;
+    
+    return {
+        localStorage: storageAvailable,
+        serviceWorker: serviceWorkerSupported,
+        online: navigator.onLine
+    };
+}
+
+// App initialization
+function initializeApp() {
+    const support = checkBrowserSupport();
+    
+    // Handle case where localStorage isn't available
+    if (!support.localStorage) {
+        alert('Warning: Your browser does not support local storage. Your dreams will not be saved.');
+    }
+    
+    // Update online status immediately
+    if (typeof updateOnlineStatus === 'function') {
+        updateOnlineStatus();
+    }
+    
+    // Initial render
+    updateSelectedDateDisplay();
+    showEntries(selectedDate);
+}
+
+// Initialize app
+initializeApp();
 
 // Dark mode toggle functionality
 const themeToggle = document.getElementById('themeToggle');
@@ -343,7 +450,10 @@ showAllBtn.addEventListener('click', () => {
                     const div = document.createElement('div');
                     div.className = 'entry';
                     div.innerHTML = `
-                        <div class="entry-time" style="font-size: 12px; color: #666; margin-bottom: 4px;">${entry.timestamp}</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                            <div class="entry-time" style="font-size: 12px; color: #666;">${entry.timestamp}</div>
+                            ${entry.priority ? '<span style="margin-left: 8px; color: #ff9800;">⭐ Important</span>' : ''}
+                        </div>
                         <div>${entry.text}</div>
                     `;
                     allDreamsList.appendChild(div);

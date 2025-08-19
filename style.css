@@ -275,16 +275,84 @@ button:hover {
 }
 .entry {
     background: #f9f9f9;
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #28a745;
     margin-bottom: 12px;
     padding: 12px;
     border-radius: 4px;
     transition: background 0.3s ease, border-color 0.3s ease;
 }
 
+.entry.priority {
+    border-left: 4px solid #ff9800;
+    background: #fff9f0;
+}
+
 .dark .entry {
     background: #5a3a6a;
+    border-left-color: #34ce57;
+}
+
+.dark .entry.priority {
     border-left-color: #ffd700;
+    background: #6a4c93;
+}
+
+/* Connection status styles */
+#connection-status {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+#connection-status.online {
+    background-color: #28a745;
+    color: white;
+}
+
+#connection-status.offline {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.noscript-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    text-align: center;
+    padding: 20px;
+}
+
+.priority-container {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.priority-container input {
+    margin-right: 8px;
+}
+
+.priority-container label {
+    font-size: 14px;
+    color: #333;
+}
+
+.dark .priority-container label {
+    color: #f0f4f8;
 }
 
 .entry-header {
@@ -292,6 +360,11 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+}
+
+.entry-header-left {
+    display: flex;
+    align-items: center;
 }
 
 .entry-time {
@@ -309,7 +382,7 @@ button:hover {
     gap: 4px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn, .delete-btn, .priority-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -317,6 +390,11 @@ button:hover {
     border-radius: 3px;
     font-size: 14px;
     transition: background 0.2s ease;
+}
+
+.priority-btn {
+    color: #ff9800;
+    margin-left: 4px;
 }
 
 .edit-btn:hover {
