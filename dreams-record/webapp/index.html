@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Record and track your dreams">
+    <meta name="theme-color" content="#28a745">
+    <title>Dreams Record</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="icons/icons.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" href="icons/icon-192x192.svg">
+</head>
+<body>
+    <div id="connection-status" class="offline" style="display:none;">Offline - Dreams will be saved locally</div>
+    <div class="container">
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+        <h1>Dreams Record</h1>
+        <div id="calendar-container">
+            <button id="showCalendarBtn" type="button">📅 Select Date</button>
+            <span id="selectedDateDisplay">Today</span>
+            <button id="showAllBtn" type="button">📖 Show All Dreams</button>
+            <button id="exportBtn" type="button">📥 Export Dreams</button>
+        </div>
+        <form id="entryForm">
+            <textarea id="note" placeholder="Write your dream here..." required></textarea>
+            <div class="priority-container">
+                <input type="checkbox" id="priorityCheckbox">
+                <label for="priorityCheckbox">Mark as important dream ⭐</label>
+            </div>
+            <button type="submit">Save Entry</button>
+        </form>
+        <div id="entries"></div>
+        <div id="calendarModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span id="closeCalendarModal" class="close">&times;</span>
+                <h2>Select Date</h2>
+                <div id="calendar">
+                    <div id="calendar-header">
+                        <button id="prevMonth" type="button">‹</button>
+                        <span id="monthYear"></span>
+                        <button id="nextMonth" type="button">›</button>
+                    </div>
+                    <div id="calendar-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div id="allDreamsModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <h2>All Dreams</h2>
+                <div id="allDreamsList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="offline.js"></script>
+    <noscript>
+        <div class="noscript-warning">
+            This app requires JavaScript to function properly.
+        </div>
+    </noscript>
+</body>
+</html>
